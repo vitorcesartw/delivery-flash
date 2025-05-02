@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.iff.edu.br.delivery.flash.model.Cliente;
+import com.iff.edu.br.delivery.flash.repository.ClienteRepository;
 import com.iff.edu.br.delivery.flash.model.Restaurante;
 import com.iff.edu.br.delivery.flash.repository.RestauranteRepository;
 
@@ -12,19 +14,24 @@ import com.iff.edu.br.delivery.flash.repository.RestauranteRepository;
 public class RestauranteService {
     @Autowired
     private RestauranteRepository restauranteRepository;
+    @Autowired
+    private ClienteRepository clienteRepository;
     
     
 
-    public Restaurante cadastrarRestaurante(Restaurante restaurante) {
-        // Validações básicas antes de salvar
-        if (restaurante.getNome() == null || restaurante.getNome().isEmpty()) {
-            throw new IllegalArgumentException("O nome do restaurante é obrigatório!");
-        }
-        if (restaurante.getEndereco() == null || restaurante.getEndereco().isEmpty()) {
-            throw new IllegalArgumentException("O endereço do restaurante é obrigatório!");
-        }
+    public Restaurante cadastrarRestaurante(Restaurante restaurante, Long clienteId) {
+        // Buscar o cliente pelo ID
+        Cliente cliente = clienteRepository.findById(clienteId)
+            .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado!"));
 
-        return restauranteRepository.save(restaurante); // Salva no banco de dados
+        // Salvar o restaurante
+        Restaurante novoRestaurante = restauranteRepository.save(restaurante);
+
+        // Vincular o restaurante ao cliente
+        cliente.getRestaurantes().add(novoRestaurante);
+        clienteRepository.save(cliente);
+
+        return novoRestaurante;
     }
 
 
@@ -35,5 +42,15 @@ public class RestauranteService {
     public Restaurante buscarRestaurantePorId(Long id) {
         return restauranteRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Restaurante não encontrado!"));
+    }
+    
+    public List<Restaurante> listarRestaurantesDoCliente(Long clienteId) {
+        Cliente cliente = clienteRepository.findById(clienteId)
+            .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado!"));
+
+        return cliente.getRestaurantes();
+    }
+    public List<Restaurante> buscarPorCliente(Long clienteId) {
+        return restauranteRepository.findByClienteId(clienteId);
     }
 }

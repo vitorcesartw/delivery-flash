@@ -1,13 +1,25 @@
 package com.iff.edu.br.delivery.flash.model;
 
+import java.io.Serializable;
+import java.util.List;
+
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.JoinColumn;
 
 @Entity
-public class Cliente {
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE) // ⚠ Isso permite que todas as subclasses compartilhem a mesma tabela
+@DiscriminatorColumn(name = "dtype", discriminatorType = DiscriminatorType.STRING)
+public class Cliente implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,13 +30,27 @@ public class Cliente {
     private String cpf;
     private String email;
     private String senha;
-    @Column(insertable = false, updatable = false)
-    private String dtype = "Cliente"; // Padrão: Cliente
+    private String tipo_user;
     // Métodos comuns
     public void realizarPedido() {
         // Lógica comum para cliente
     }
 
+    @ManyToMany
+    @JoinTable(
+        name = "cliente_restaurante",
+        joinColumns = @JoinColumn(name = "cliente_id"),
+        inverseJoinColumns = @JoinColumn(name = "restaurante_id") // ⚠ Correção aplicada!
+    )
+    
+    private List<Restaurante> restaurantes;
+    public void setRestaurantes(List<Restaurante> restaurantes) {
+        this.restaurantes = restaurantes;
+    }
+
+    public List<Restaurante> getRestaurantes() {
+        return restaurantes;
+    }
 	public Long getId() {
 		return id;
 	}
@@ -79,11 +105,13 @@ public class Cliente {
     public void setSenha(String senha) {
         this.senha = senha;
     }
-    public String getDtype() {
-        return dtype;
-    }
 
-    public void setDtype(String dtype) {
-        this.dtype = dtype;
-    }
+	public String getTipo_user() {
+		return tipo_user;
+	}
+
+	public void setTipo_user(String tipo_user) {
+		this.tipo_user = tipo_user;
+	}
+
 }

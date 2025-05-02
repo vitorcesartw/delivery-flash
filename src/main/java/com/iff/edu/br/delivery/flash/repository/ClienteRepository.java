@@ -10,4 +10,5 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     // Métodos personalizados podem ser adicionados se necessário
     Optional<Cliente> findByCpf(String cpf); // Exemplo de método customizado
     Cliente findByEmail(String email);
+    Optional<Cliente> findByEmailAndSenha(String email, String senha);
 }

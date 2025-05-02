@@ -3,13 +3,20 @@ package com.iff.edu.br.delivery.flash.model;
 import java.sql.Date;
 import java.util.List;
 
+import com.iff.edu.br.delivery.flash.patterns.state.AguardandoPagamento;
+import com.iff.edu.br.delivery.flash.patterns.state.EstadoPedido;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Transient;
 
 @Entity
 public class Pedido {
@@ -17,7 +24,6 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String status;
 
     @ManyToOne
     private Cliente cliente;
@@ -38,6 +44,37 @@ public class Pedido {
 
     private float valorTotal;
 
+    @Transient // O estado não será salvo diretamente no banco
+    private EstadoPedido estado;
+
+    @Column(name = "estado_pedido") // Campo no banco para armazenar o nome do estado
+    private String estadoNome;
+
+    public Pedido() {
+        this.estado = new AguardandoPagamento(); // Estado inicial
+        this.estadoNome = estado.getNomeEstado();
+    }
+
+    public void setEstado(EstadoPedido estado) {
+        this.estado = estado;
+        this.estadoNome = estado.getNomeEstado(); // Atualiza o nome salvo no banco
+    }
+
+    public EstadoPedido getEstado() {
+        return estado;
+    }
+
+    public void avancarEstado() {
+        estado.proximoEstado(this);
+    }
+
+    public void cancelarPedido() {
+        estado.cancelarPedido(this);
+    }
+    public String getEstadoNome() { // ⚠️ Esse método estava faltando!
+        return estadoNome;
+    }
+    
 	public Long getId() {
 		return id;
 	}
@@ -46,13 +83,7 @@ public class Pedido {
 		this.id = id;
 	}
 
-	public String getStatus() {
-		return status;
-	}
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
 
 	public Cliente getCliente() {
 		return cliente;
@@ -109,6 +140,8 @@ public class Pedido {
 	public void setValorTotal(float valorTotal) {
 		this.valorTotal = valorTotal;
 	}
+
+
 
     // Getters e Setters
 }

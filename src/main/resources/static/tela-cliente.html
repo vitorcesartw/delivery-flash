@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Cliente</title>
+    <link rel="stylesheet" href="tela-cliente.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="menu-lateral">
+            <h2>Menu Cliente</h2>
+            <nav>
+                <ul id="menuItens">
+                    <li><a href="alterar-cadastro-user.html">Alterar Cadastro</a></li>
+                    <li><button id="verRestaurantesBtn">Ver Restaurantes Disponíveis</button></li>
+                    <li><a href="#" id="sairBtn">Sair</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="conteudo" id="conteudo">
+            <h1>Bem-vindo, Cliente!</h1>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById("verRestaurantesBtn")?.addEventListener("click", async function(event) {
+            event.preventDefault();
+
+            try {
+                const response = await fetch("/restaurantes");
+                if (!response.ok) {
+                    throw new Error(`Erro ao buscar restaurantes: ${response.statusText}`);
+                }
+
+                const restaurantes = await response.json();
+                console.log("Restaurantes disponíveis recebidos:", restaurantes);
+
+                let restaurantesHtml = restaurantes.length > 0 
+                    ? restaurantes.map(r => `
+                        <div class="restaurante">
+                            <strong>${r.nome}</strong> - ${r.endereco}
+                            <button onclick="verCardapio(${r.id})">Ver Cardápio</button>
+                        </div>
+                    `).join("")
+                    : `<p>Nenhum restaurante disponível.</p>`;
+
+                document.getElementById("conteudo").innerHTML = `
+                    <h1>Restaurantes Disponíveis</h1>
+                    <div id="lista-restaurantes">
+                        ${restaurantesHtml}
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error("Erro ao carregar restaurantes:", error);
+                alert("Erro ao carregar restaurantes.");
+            }
+        });
+
+        async function verCardapio(restauranteId) {
+            try {
+                const response = await fetch(`/restaurantes/${restauranteId}/cardapio`);
+                if (!response.ok) {
+                    throw new Error(`Erro ao buscar cardápio: ${response.statusText}`);
+                }
+
+                const cardapio = await response.json();
+                console.log("Cardápio do restaurante recebido:", cardapio);
+
+                let cardapioHtml = cardapio.length > 0 
+                    ? cardapio.map(item => `<div>${item.nome} - R$${item.preco.toFixed(2)}</div>`).join("")
+                    : `<p>Cardápio vazio.</p>`;
+
+                document.getElementById("conteudo").innerHTML = `
+                    <h1>Cardápio do Restaurante</h1>
+                    <div id="lista-cardapio">
+                        ${cardapioHtml}
+                    </div>
+                    <button onclick="window.location.reload()">Voltar</button>
+                `;
+
+            } catch (error) {
+                console.error("Erro ao carregar cardápio:", error);
+                alert("Erro ao carregar cardápio.");
+            }
+        }
+
+        document.getElementById("sairBtn")?.addEventListener("click", async function(event) {
+            event.preventDefault();
+            try {
+                const response = await fetch("/usuario/logout", { method: "GET" });
+                if (response.ok) {
+                    sessionStorage.clear();
+                    window.location.href = "login.html";
+                } else {
+                    alert("Erro ao sair. Tente novamente!");
+                }
+            } catch (error) {
+                console.error("Erro no logout:", error);
+                alert("Erro inesperado ao tentar sair.");
+            }
+        });
+    </script>
+</body>
+</html>

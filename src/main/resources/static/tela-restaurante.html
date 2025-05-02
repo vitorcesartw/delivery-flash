@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Restaurante</title>
+    <link rel="stylesheet" href="tela-restaurante.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="menu-lateral">
+            <h2>Menu Restaurante</h2>
+            <nav>
+                <ul id="menuItens">
+                    <li><a href="alterar-cadastro-restaurante.html">Alterar Cadastro Restaurante</a></li>
+                    <li><a href="cadastro-restaurante.html">Cadastrar Restaurante</a></li>
+                    <li><a href="#" id="sairBtn">Sair</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="conteudo" id="conteudo">
+            <div class="pedidos-recentes">
+                <h2>Pedidos Recentes</h2>
+                <ul id="listaPedidos">
+                    <!-- Os pedidos serão carregados dinamicamente via JavaScript -->
+                </ul>
+            </div>
+
+            <div class="restaurantes-vinculados">
+                <h2>Seus Restaurantes Cadastrados</h2>
+                <ul id="listaRestaurantes">
+                    <!-- Restaurantes vinculados ao usuário serão carregados dinamicamente via JavaScript -->
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById("sairBtn")?.addEventListener("click", async function(event) {
+            event.preventDefault();
+            try {
+                const response = await fetch("/usuario/logout", { method: "GET" });
+                if (response.ok) {
+                    sessionStorage.clear();
+                    window.location.href = "login.html";
+                } else {
+                    alert("Erro ao sair. Tente novamente!");
+                }
+            } catch (error) {
+                console.error("Erro no logout:", error);
+                alert("Erro inesperado ao tentar sair.");
+            }
+        });
+
+    </script>
+	<script src="tela-restaurante.js"></script>
+</body>
+</html>

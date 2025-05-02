@@ -26,13 +26,17 @@ import ch.qos.logback.classic.Logger;
 @RequestMapping("/clientes")
 public class ClienteController {
 
-
-  
     @Autowired
     private ClienteService clienteService;
 
     @PostMapping("/cadastrar")
     public ResponseEntity<Cliente> cadastrarCliente(@ModelAttribute Cliente cliente) {
+        System.out.println("Recebendo cadastro no backend: " + cliente); // ⚠ Logando os dados antes de salvar
+        System.out.println("Valor de dtype recebido: " + cliente.getTipo_user());
+        if (cliente == null || cliente.getNome() == null) {
+            System.out.println("Erro: Cliente recebido como NULL ou sem Nome!");
+        }
+
         Cliente novoCliente = clienteService.cadastrarCliente(cliente);
         return ResponseEntity.ok(novoCliente);
     }
@@ -53,15 +57,5 @@ public class ClienteController {
     public ResponseEntity<Void> deletarCliente(@PathVariable Long id) {
         clienteService.deletarCliente(id);
         return ResponseEntity.noContent().build();
-    }
-    @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestParam String email, @RequestParam String senha) {
-        boolean autenticado = clienteService.validarLogin(email, senha);
-
-        if (autenticado) {
-            return ResponseEntity.ok("/tela-inicial.html"); // Retorna URL como texto
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("E-mail ou senha inválidos."); // Mensagem clara de erro
-        }
     }
 }

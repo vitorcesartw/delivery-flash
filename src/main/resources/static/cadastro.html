@@ -30,11 +30,10 @@
             margin-bottom: 5px;
             font-weight: bold;
         }
-        .form-container input {
+        .form-container input, .form-container select {
             width: 100%;
             margin-bottom: 15px;
             padding: 10px;
-            border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 16px;
         }
@@ -51,18 +50,12 @@
         .form-container button:hover {
             background-color: #0056b3;
         }
-        #success-message {
-            display: none;
-            color: green;
-            text-align: center;
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
     <div class="form-container">
-        <h1>Cadastro de Cliente</h1>
-        <form id="cadastroForm" action="/clientes/cadastrar" method="POST" onsubmit="mostrarMensagem(event)">
+        <h1>Cadastro</h1>
+        <form id="cadastroForm">
             <label for="nome">Nome:</label>
             <input type="text" id="nome" name="nome" required>
 
@@ -81,38 +74,58 @@
             <label for="senha">Senha:</label>
             <input type="password" id="senha" name="senha" required>
 
-            <button type="submit">Cadastrar Cliente</button>
+			<label for="tipo_user">Tipo de Cadastro:</label> <!-- ⚠ Ajustado para `dtype` -->
+			           <select id="tipo_user" name="tipo_user" required>
+			               <option value="cliente">Cliente</option>
+			               <option value="restaurante">Restaurante</option>
+			           </select>
+
+            <button type="submit">Cadastrar</button>
         </form>
-        <p id="success-message">Cadastro realizado com sucesso! Redirecionando...</p>
     </div>
 
-    <script>
-        function mostrarMensagem(event) {
-            event.preventDefault(); // Previne o envio automático para controle da mensagem
+	<script>
+		document.getElementById("cadastroForm").addEventListener("submit", async function(event) {
+		    event.preventDefault();
 
-            const form = document.getElementById("cadastroForm");
-            const successMessage = document.getElementById("success-message");
+		    const form = document.getElementById("cadastroForm");
+		    const formData = new FormData(form);
+		    
+		    const dtypeSelecionado = document.getElementById("tipo_user").value; // ⚠ Pegamos diretamente do dropdown
 
-            // Envia os dados ao backend
-            fetch(form.action, {
-                method: 'POST',
-                body: new FormData(form)
-            })
-            .then(response => {
-                if (response.ok) {
-                    // Exibe mensagem de sucesso
-                    successMessage.style.display = 'block';
+		    console.log("dtype selecionado:", dtypeSelecionado); // ⚠ Logamos para depuração
 
-                    // Redireciona para a tela de login após 3 segundos
-                    setTimeout(() => {
-                        window.location.href = "/login.html";
-                    }, 3000);
-                } else {
-                    alert("Erro ao realizar cadastro. Tente novamente.");
-                }
-            })
-            .catch(error => console.error("Erro:", error));
-        }
-    </script>
+		    if (!dtypeSelecionado || (dtypeSelecionado !== "cliente" && dtypeSelecionado !== "restaurante")) {
+		        alert("Erro: Tipo de usuário inválido!");
+		        return;
+		    }
+
+		    formData.set("dtype", dtypeSelecionado); // ⚠ Garantimos que `dtype` seja corretamente enviado
+
+		    try {
+		        const response = await fetch("/clientes/cadastrar", {
+		            method: "POST",
+		            body: formData
+		        });
+
+		        const data = await response.json();
+		        console.log("Resposta do servidor:", data);
+
+		        if (!response.ok) {
+		            alert("Erro no cadastro: " + (data.mensagem || "Tente novamente!"));
+		            console.warn("Erro HTTP:", response.status);
+		            return;
+		        }
+
+		        alert("Cadastro realizado com sucesso!");
+		        window.location.href = "login.html";
+
+		    } catch (error) {
+		        console.error("Erro no cadastro:", error);
+		        alert("Erro inesperado ao tentar cadastrar.");
+		    }
+		});
+
+	</script>
 </body>
 </html>
