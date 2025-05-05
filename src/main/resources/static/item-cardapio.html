@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Item do Cardápio</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+        }
+        
+        .checkbox-group input {
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .success-message {
+            color: #4CAF50;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cadastro de Item do Cardápio</h1>
+        
+        <form id="itemForm">
+            <div class="form-group">
+                <label for="restaurante">Restaurante:</label>
+                <select id="restaurante" name="restaurante" required>
+                    <option value="">Selecione um restaurante</option>
+                    <!-- Opções serão preenchidas via JavaScript -->
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="nome">Nome do Item:</label>
+                <input type="text" id="nome" name="nome" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="descricao">Descrição:</label>
+                <input type="text" id="descricao" name="descricao" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="preco">Preço:</label>
+                <input type="number" id="preco" name="preco" step="0.01" min="0" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="categoria">Categoria:</label>
+                <input type="text" id="categoria" name="categoria" required>
+            </div>
+            
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="visivel" name="visivel" checked>
+                <label for="visivel">Item visível no cardápio</label>
+            </div>
+            
+            <button type="submit">Cadastrar Item</button>
+        </form>
+        
+        <div id="successMessage" class="success-message">
+            Item cadastrado com sucesso!
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carrega os restaurantes ao carregar a página
+            fetchRestaurantes();
+            
+            // Configura o envio do formulário
+            document.getElementById('itemForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                cadastrarItem();
+            });
+        });
+        
+        function fetchRestaurantes() {
+            fetch('/cardapio/restaurantes/listar') // Você precisará criar este endpoint no controller
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('restaurante');
+                    data.forEach(restaurante => {
+                        const option = document.createElement('option');
+                        option.value = restaurante.id;
+                        option.textContent = restaurante.nome;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Erro ao carregar restaurantes:', error));
+        }
+        
+        function cadastrarItem() {
+            const itemCardapio = {
+                restaurante: { id: document.getElementById('restaurante').value },
+                nome: document.getElementById('nome').value,
+                descricao: document.getElementById('descricao').value,
+                preco: parseFloat(document.getElementById('preco').value),
+                categoria: document.getElementById('categoria').value,
+                visivel: document.getElementById('visivel').checked
+            };
+            
+            fetch('/cardapio/cadastrar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(itemCardapio)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Erro ao cadastrar item');
+            })
+            .then(data => {
+                // Mostra mensagem de sucesso e limpa o formulário
+                document.getElementById('successMessage').style.display = 'block';
+                document.getElementById('itemForm').reset();
+                
+                // Esconde a mensagem após 3 segundos
+                setTimeout(() => {
+                    document.getElementById('successMessage').style.display = 'none';
+                }, 3000);
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao cadastrar item: ' + error.message);
+            });
+        }
+    </script>
+</body>
+</html>

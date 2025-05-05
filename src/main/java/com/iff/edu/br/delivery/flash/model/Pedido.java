@@ -1,21 +1,29 @@
 package com.iff.edu.br.delivery.flash.model;
 
+import java.math.BigDecimal;
 import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
+import com.iff.edu.br.delivery.flash.pagamento.Pagamento;
 import com.iff.edu.br.delivery.flash.patterns.state.AguardandoPagamento;
+import com.iff.edu.br.delivery.flash.patterns.state.EmPreparo;
 import com.iff.edu.br.delivery.flash.patterns.state.EstadoPedido;
+import com.iff.edu.br.delivery.flash.patterns.state.ProntoParaEntrega;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Transient;
 
 @Entity
@@ -26,11 +34,14 @@ public class Pedido {
 
 
     @ManyToOne
+    @JoinColumn(name = "cliente_id")
     private Cliente cliente;
 
-    private Date data;
+    @Column(name = "data_pedido")
+    private LocalDateTime data;
 
     @ManyToOne
+    @JoinColumn(name = "restaurante_id")
     private Restaurante restaurante;
 
     @ManyToOne
@@ -39,38 +50,38 @@ public class Pedido {
     @OneToOne(mappedBy = "pedido")
     private Pagamento pagamento;
 
-    @OneToMany
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
     private List<ItemPedido> itens;
 
-    private float valorTotal;
+    @Column(name = "valor_total", precision = 10, scale = 2)
+    private BigDecimal valorTotal;
 
     @Transient // O estado não será salvo diretamente no banco
     private EstadoPedido estado;
 
-    @Column(name = "estado_pedido") // Campo no banco para armazenar o nome do estado
+    @Column(name = "estado_pedido", insertable = false, updatable = false)
     private String estadoNome;
 
-    public Pedido() {
-        this.estado = new AguardandoPagamento(); // Estado inicial
-        this.estadoNome = estado.getNomeEstado();
-    }
+ 
+    @Column(name = "estado_pedido")
+    private String estadoPersistido;
 
-    public void setEstado(EstadoPedido estado) {
-        this.estado = estado;
-        this.estadoNome = estado.getNomeEstado(); // Atualiza o nome salvo no banco
+
+
+    // Delegações para o estado atual
+    public void pagar() {
+        estado.pagar();
     }
 
     public EstadoPedido getEstado() {
         return estado;
     }
-
-    public void avancarEstado() {
-        estado.proximoEstado(this);
+    
+    public void setEstado(EstadoPedido estado) {
+        this.estado = estado;
     }
+    
 
-    public void cancelarPedido() {
-        estado.cancelarPedido(this);
-    }
     public String getEstadoNome() { // ⚠️ Esse método estava faltando!
         return estadoNome;
     }
@@ -93,11 +104,11 @@ public class Pedido {
 		this.cliente = cliente;
 	}
 
-	public Date getData() {
+	public LocalDateTime getData() {
 		return data;
 	}
 
-	public void setData(Date data) {
+	public void setData(LocalDateTime data) {
 		this.data = data;
 	}
 
@@ -133,12 +144,28 @@ public class Pedido {
 		this.itens = itens;
 	}
 
-	public float getValorTotal() {
-		return valorTotal;
+    public BigDecimal getValorTotal() {
+        return valorTotal;
+    }
+
+    public void setValorTotal(BigDecimal valorTotal) {
+        this.valorTotal = valorTotal;
+    }
+    
+    
+
+
+
+	public String getEstadoPersistido() {
+		return estadoPersistido;
 	}
 
-	public void setValorTotal(float valorTotal) {
-		this.valorTotal = valorTotal;
+	public void setEstadoPersistido(String estadoPersistido) {
+		this.estadoPersistido = estadoPersistido;
+	}
+
+	public void setEstadoNome(String estadoNome) {
+		this.estadoNome = estadoNome;
 	}
 
 

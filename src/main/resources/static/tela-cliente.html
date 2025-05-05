@@ -14,6 +14,7 @@
                 <ul id="menuItens">
                     <li><a href="alterar-cadastro-user.html">Alterar Cadastro</a></li>
                     <li><button id="verRestaurantesBtn">Ver Restaurantes Disponíveis</button></li>
+                    <li><button id="verCarrinhoBtn">Meu Carrinho</button></li>
                     <li><a href="#" id="sairBtn">Sair</a></li>
                 </ul>
             </nav>
@@ -23,24 +24,76 @@
         </main>
     </div>
 
+    <!-- Modal para seleção de quantidade -->
+    <div id="quantidadeModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="fecharModal()">&times;</span>
+            <h2>Adicionar ao Pedido</h2>
+            <div id="modalItemInfo"></div>
+            <label for="quantidade">Quantidade:</label>
+            <input type="number" id="quantidade" min="1" value="1">
+            <button onclick="adicionarAoCarrinho()">Adicionar ao Carrinho</button>
+        </div>
+    </div>
+
+	<div id="pagamentoModal" class="modal" style="display:none;">
+	    <div class="modal-content">
+	        <span class="close" onclick="fecharPagamentoModal()">&times;</span>
+	        <h2>Selecione a Forma de Pagamento</h2>
+	        
+	        <div class="formas-pagamento">
+	            <label>
+	                <input type="radio" name="formaPagamento" value="PIX" checked>
+	                <img src="assets/img/pix.png" alt="PIX"> PIX
+	            </label>
+	            
+	            <label>
+	                <input type="radio" name="formaPagamento" value="CARTAO">
+	                <img src="assets/img/cartao.png" alt="Cartão"> Cartão de Crédito
+	            </label>
+	            
+	            <label>
+	                <input type="radio" name="formaPagamento" value="DINHEIRO">
+	                <img src="assets/img/dinheiro.png" alt="Dinheiro"> Dinheiro
+	            </label>
+	        </div>
+	        
+	        <div id="detalhesPagamento" style="margin-top: 20px;">
+	            <!-- Dinâmico - será preenchido conforme a forma selecionada -->
+	        </div>
+	        
+	        <button onclick="confirmarPagamento()" class="btn-confirmar">Confirmar Pagamento</button>
+	    </div>
+	</div>
+	
     <script>
+        let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+        let itemSelecionado = null;
+
         document.getElementById("verRestaurantesBtn")?.addEventListener("click", async function(event) {
             event.preventDefault();
+            await carregarRestaurantes();
+        });
 
+        document.getElementById("verCarrinhoBtn")?.addEventListener("click", function() {
+            mostrarCarrinho();
+        });
+
+        async function carregarRestaurantes() {
             try {
                 const response = await fetch("/restaurantes");
-                if (!response.ok) {
-                    throw new Error(`Erro ao buscar restaurantes: ${response.statusText}`);
-                }
+                if (!response.ok) throw new Error(`Erro: ${response.statusText}`);
 
                 const restaurantes = await response.json();
-                console.log("Restaurantes disponíveis recebidos:", restaurantes);
-
+                
                 let restaurantesHtml = restaurantes.length > 0 
                     ? restaurantes.map(r => `
                         <div class="restaurante">
-                            <strong>${r.nome}</strong> - ${r.endereco}
-                            <button onclick="verCardapio(${r.id})">Ver Cardápio</button>
+                            <div class="restaurante-info">
+                                <strong>${r.nome}</strong>
+                                <p>${r.endereco}</p>
+                            </div>
+                            <button class="btn-cardapio" onclick="verCardapio(${r.id})">Ver Cardápio</button>
                         </div>
                     `).join("")
                     : `<p>Nenhum restaurante disponível.</p>`;
@@ -53,36 +106,145 @@
                 `;
 
             } catch (error) {
-                console.error("Erro ao carregar restaurantes:", error);
+                console.error("Erro:", error);
                 alert("Erro ao carregar restaurantes.");
             }
-        });
+        }
 
         async function verCardapio(restauranteId) {
             try {
                 const response = await fetch(`/restaurantes/${restauranteId}/cardapio`);
-                if (!response.ok) {
-                    throw new Error(`Erro ao buscar cardápio: ${response.statusText}`);
-                }
+                if (!response.ok) throw new Error(`Erro: ${response.statusText}`);
 
                 const cardapio = await response.json();
-                console.log("Cardápio do restaurante recebido:", cardapio);
-
+                
                 let cardapioHtml = cardapio.length > 0 
-                    ? cardapio.map(item => `<div>${item.nome} - R$${item.preco.toFixed(2)}</div>`).join("")
+                    ? cardapio.map(item => `
+                        <div class="item-cardapio">
+                            <div class="item-info">
+                                <strong>${item.nome}</strong>
+                                <p>${item.descricao}</p>
+                                <span>R$ ${item.preco.toFixed(2)}</span>
+                            </div>
+                            <button class="btn-pedido" onclick="selecionarItem(${item.id_item}, ${item.preco}, '${item.nome.replace("'", "\\'")}')">
+                                Fazer Pedido
+                            </button>
+                        </div>
+                    `).join("")
                     : `<p>Cardápio vazio.</p>`;
 
                 document.getElementById("conteudo").innerHTML = `
                     <h1>Cardápio do Restaurante</h1>
+                    <button class="btn-voltar" onclick="carregarRestaurantes()">Voltar</button>
                     <div id="lista-cardapio">
                         ${cardapioHtml}
                     </div>
-                    <button onclick="window.location.reload()">Voltar</button>
                 `;
 
             } catch (error) {
-                console.error("Erro ao carregar cardápio:", error);
+                console.error("Erro:", error);
                 alert("Erro ao carregar cardápio.");
+            }
+        }
+
+        function selecionarItem(itemId, preco, nome) {
+            itemSelecionado = { id: itemId, preco, nome };
+            document.getElementById('modalItemInfo').innerHTML = `
+                <p><strong>${nome}</strong></p>
+                <p>Preço unitário: R$ ${preco.toFixed(2)}</p>
+            `;
+            document.getElementById('quantidade').value = 1;
+            document.getElementById('quantidadeModal').style.display = 'block';
+        }
+
+        function fecharModal() {
+            document.getElementById('quantidadeModal').style.display = 'none';
+        }
+
+        function adicionarAoCarrinho() {
+            const quantidade = parseInt(document.getElementById('quantidade').value);
+            if (quantidade < 1) {
+                alert("Quantidade inválida!");
+                return;
+            }
+
+            const item = {
+                ...itemSelecionado,
+                quantidade,
+                total: itemSelecionado.preco * quantidade
+            };
+
+            carrinho.push(item);
+            localStorage.setItem('carrinho', JSON.stringify(carrinho));
+            fecharModal();
+            alert("Item adicionado ao carrinho!");
+        }
+
+        function mostrarCarrinho() {
+            if (carrinho.length === 0) {
+                document.getElementById("conteudo").innerHTML = `
+                    <h1>Meu Carrinho</h1>
+                    <p>Carrinho vazio</p>
+                    <button class="btn-voltar" onclick="carregarRestaurantes()">Voltar</button>
+                `;
+                return;
+            }
+
+            let carrinhoHtml = carrinho.map((item, index) => `
+                <div class="item-carrinho">
+                    <div class="item-info">
+                        <strong>${item.nome}</strong>
+                        <p>${item.quantidade} x R$ ${item.preco.toFixed(2)} = R$ ${item.total.toFixed(2)}</p>
+                    </div>
+                    <button class="btn-remover" onclick="removerItem(${index})">Remover</button>
+                </div>
+            `).join("");
+
+            const totalPedido = carrinho.reduce((sum, item) => sum + item.total, 0);
+
+            document.getElementById("conteudo").innerHTML = `
+                <h1>Meu Carrinho</h1>
+                <div id="lista-carrinho">
+                    ${carrinhoHtml}
+                </div>
+                <div class="total-pedido">
+                    <strong>Total: R$ ${totalPedido.toFixed(2)}</strong>
+                </div>
+                <button class="btn-finalizar" onclick="finalizarPedido()">Finalizar Pedido</button>
+                <button class="btn-voltar" onclick="carregarRestaurantes()">Voltar</button>
+            `;
+        }
+
+        function removerItem(index) {
+            carrinho.splice(index, 1);
+            localStorage.setItem('carrinho', JSON.stringify(carrinho));
+            mostrarCarrinho();
+        }
+
+        async function finalizarPedido() {
+            try {
+                const response = await fetch('/pedidos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        itens: carrinho,
+                        // Adicione outros dados necessários como clienteId, etc.
+                    })
+                });
+
+                if (response.ok) {
+                    localStorage.removeItem('carrinho');
+                    carrinho = [];
+                    alert("Pedido realizado com sucesso!");
+                    mostrarCarrinho();
+                } else {
+                    throw new Error('Erro ao finalizar pedido');
+                }
+            } catch (error) {
+                console.error("Erro:", error);
+                alert("Erro ao finalizar pedido.");
             }
         }
 
@@ -91,14 +253,14 @@
             try {
                 const response = await fetch("/usuario/logout", { method: "GET" });
                 if (response.ok) {
-                    sessionStorage.clear();
+                    localStorage.clear();
                     window.location.href = "login.html";
                 } else {
-                    alert("Erro ao sair. Tente novamente!");
+                    throw new Error('Erro ao sair');
                 }
             } catch (error) {
-                console.error("Erro no logout:", error);
-                alert("Erro inesperado ao tentar sair.");
+                console.error("Erro:", error);
+                alert("Erro ao sair.");
             }
         });
     </script>

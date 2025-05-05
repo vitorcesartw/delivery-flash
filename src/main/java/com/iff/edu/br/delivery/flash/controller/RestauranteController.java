@@ -57,8 +57,7 @@ public class RestauranteController {
     // Listar restaurantes
     @GetMapping
     public ResponseEntity<List<Restaurante>> listarRestaurantes() {
-        List<Restaurante> restaurantes = restauranteRepository.findAll();
-        return ResponseEntity.ok(restaurantes);
+        return ResponseEntity.ok(restauranteService.listarRestaurantes());
     }
 
     // Listar cardápio de um restaurante

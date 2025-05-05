@@ -1,7 +1,6 @@
-package com.iff.edu.br.delivery.flash;
+package com.iff.edu.br.delivery.flash.model;
 
-import com.iff.edu.br.delivery.flash.model.Cliente;
-import com.iff.edu.br.delivery.flash.model.Restaurante;
+import com.iff.edu.br.delivery.flash.ClienteRestauranteId;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

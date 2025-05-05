@@ -24,4 +24,8 @@ public class ItemCardapioService {
     public List<ItemCardapio> listarPorRestaurante(Long restauranteId) {
         return itemCardapioRepository.findByRestauranteId(restauranteId);
     }
+    public ItemCardapio buscarPorId(Long id) {
+        return itemCardapioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Item do cardápio não encontrado!"));
+    }
 }
