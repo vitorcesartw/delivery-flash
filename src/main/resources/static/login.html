@@ -76,44 +76,6 @@
     </div>
 
     <script>
-        document.getElementById("loginForm").addEventListener("submit", async function(event) {
-            event.preventDefault();
-
-            const email = document.getElementById("email").value;
-            const senha = document.getElementById("senha").value;
-
-            try {
-                const response = await fetch("/usuario/login", { // ⚠ Agora chamamos `/usuario/login` corretamente
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, senha })
-                });
-
-                const data = await response.json();
-
-                if (!response.ok || !data.tipoUsuario) {
-                    alert("Erro no login: " + (data.mensagem || "Falha desconhecida"));
-                    console.warn("Erro na autenticação:", response.status);
-                    return;
-                }
-
-                console.log("Resposta do login recebida:", data);
-                console.log("Tipo de Usuário retornado pelo backend:", data.tipoUsuario); // ⚠ Logamos para depuração
-
-                // ⚠ Redirecionamos com base no dtype do banco
-                if (data.tipoUsuario === "cliente") {
-                    window.location.href = "tela-cliente.html";
-                } else if (data.tipoUsuario === "restaurante") {
-                    window.location.href = "tela-restaurante.html";
-                } else {
-                    alert("Erro: Tipo de usuário inválido!");
-                }
-
-            } catch (error) {
-                console.error("Erro no login:", error);
-                alert("Erro inesperado ao tentar logar.");
-            }
-        });
     </script>
 	<script src="login.js"></script>
 </body>

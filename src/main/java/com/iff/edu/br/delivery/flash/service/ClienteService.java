@@ -11,14 +11,18 @@ import com.iff.edu.br.delivery.flash.model.Restaurante;
 import com.iff.edu.br.delivery.flash.repository.ClienteRepository;
 import com.iff.edu.br.delivery.flash.repository.RestauranteRepository;
 
+import jakarta.transaction.Transactional;
+
 
 @Service
 public class ClienteService {
 
     @Autowired
     private ClienteRepository clienteRepository;
+    
+    
     @Autowired
-    private RestauranteRepository restauranteRepository;
+    private RestauranteService restauranteService;
 
 
     public Cliente cadastrarCliente(Cliente cliente) {
@@ -39,15 +43,18 @@ public class ClienteService {
         return clienteRepository.save(cliente);
     }
     
+    @Transactional
     public Cliente vincularRestaurantes(Long clienteId, List<Long> restaurantesIds) {
         Cliente cliente = clienteRepository.findById(clienteId)
             .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado!"));
 
-        List<Restaurante> restaurantes = restauranteRepository.findAllById(restaurantesIds);
+        // Chamando o service em vez do repository diretamente
+        List<Restaurante> restaurantes = restauranteService.buscarRestaurantesPorIds(restaurantesIds);
         
         cliente.setRestaurantes(restaurantes);
         return clienteRepository.save(cliente);
     }
+
 
     
     public Cliente atualizarCliente(Cliente cliente) {
@@ -77,7 +84,12 @@ public class ClienteService {
     }
 
     public Cliente autenticarCliente(String email, String senha) {
-        return clienteRepository.findByEmailAndSenha(email, senha).orElse(null);
+        return clienteRepository.findByEmailAndSenha(email, senha)
+                .map(cliente -> {
+                    cliente.setTipo_user(cliente.getTipo_user()); // ✅ Assegura que o tipo de usuário seja incluído
+                    return cliente;
+                })
+                .orElse(null);
     }
 }
 

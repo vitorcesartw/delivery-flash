@@ -1,5 +1,6 @@
 package com.iff.edu.br.delivery.flash.service;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,5 +53,12 @@ public class RestauranteService {
     }
     public List<Restaurante> buscarPorCliente(Long clienteId) {
         return restauranteRepository.findByClienteId(clienteId);
+    }
+    
+    public List<Restaurante> buscarRestaurantesPorIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return restauranteRepository.findAllById(ids);
     }
 }

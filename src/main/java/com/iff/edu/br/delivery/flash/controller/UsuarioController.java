@@ -70,18 +70,19 @@ public class UsuarioController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("mensagem", "Credenciais inválidas"));
         }
 
-        String tipoUsuario = autenticado.getTipo_user(); // ⚠ Pegamos `dtype` diretamente do banco
+       
 
         session.setAttribute("clienteId", autenticado.getId()); 
-        session.setAttribute("tipoUsuario", tipoUsuario); 
+        session.setAttribute("tipo_user", autenticado.getTipo_user());
 
         Map<String, String> response = new HashMap<>();
         response.put("mensagem", "Login realizado com sucesso!");
         response.put("clienteId", autenticado.getId().toString());
-        response.put("tipoUsuario", tipoUsuario); 
+        response.put("tipo_user", autenticado.getTipo_user());
 
         return ResponseEntity.ok(response);
     }
+    
     @GetMapping("/logout")
     public ResponseEntity<String> logout(HttpSession session) {
         session.invalidate(); // ⚠ Remove todos os dados da sessão

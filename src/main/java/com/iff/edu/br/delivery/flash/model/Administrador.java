@@ -6,16 +6,16 @@ import jakarta.persistence.Entity;
 
 @Entity
 public class Administrador extends Cliente {
-    private String nivelAcesso; // Ex.: "Administrador Geral"
+    private String nivelAcesso; 
 
-    // Métodos específicos
+
     public void gerenciarCadastro() {
-        // Lógica específica para o administrador
+
     }
 
     public void resolverDisputa() {
-        // Lógica para resolver disputas
+
     }
 
-    // Getters e Setters adicionais
+ 
 }

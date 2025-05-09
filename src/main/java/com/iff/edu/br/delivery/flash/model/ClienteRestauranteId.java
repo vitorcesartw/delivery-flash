@@ -1,4 +1,4 @@
-package com.iff.edu.br.delivery.flash;
+package com.iff.edu.br.delivery.flash.model;
 
 import java.io.Serializable;
 import java.util.Objects;

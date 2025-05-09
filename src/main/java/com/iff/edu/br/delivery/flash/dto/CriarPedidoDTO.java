@@ -5,10 +5,10 @@ import java.util.List;
 public class CriarPedidoDTO {
     private Long idCliente;
     private Long idRestaurante;
-    private PagamentoDTO pagamento;  // Agora é um PagamentoDTO
+    private PagamentoDTO pagamento;  
     private List<ItemPedidoDTO> itens;
 
-    // Getters e Setters
+
     public Long getIdCliente() {
         return idCliente;
     }
@@ -45,7 +45,7 @@ public class CriarPedidoDTO {
         private Long idItemCardapio;
         private int quantidade;
 
-        // Getters e Setters
+        
         public Long getIdItemCardapio() {
             return idItemCardapio;
         }
@@ -73,7 +73,7 @@ public class CriarPedidoDTO {
         private Boolean trocoNecessario; // Para dinheiro
         private Float valorTroco;
 
-        // Getters e Setters
+        
         public String getTipo() {
             return tipo;
         }

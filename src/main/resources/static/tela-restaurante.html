@@ -14,6 +14,7 @@
                 <ul id="menuItens">
                     <li><a href="alterar-cadastro-restaurante.html">Alterar Cadastro Restaurante</a></li>
                     <li><a href="cadastro-restaurante.html">Cadastrar Restaurante</a></li>
+                    <li><a href="item-cardapio.html">Cadastrar Item no Cardápio</a></li>
                     <li><a href="#" id="sairBtn">Sair</a></li>
                 </ul>
             </nav>
@@ -36,23 +37,8 @@
     </div>
 
     <script>
-        document.getElementById("sairBtn")?.addEventListener("click", async function(event) {
-            event.preventDefault();
-            try {
-                const response = await fetch("/usuario/logout", { method: "GET" });
-                if (response.ok) {
-                    sessionStorage.clear();
-                    window.location.href = "login.html";
-                } else {
-                    alert("Erro ao sair. Tente novamente!");
-                }
-            } catch (error) {
-                console.error("Erro no logout:", error);
-                alert("Erro inesperado ao tentar sair.");
-            }
-        });
-
+ 
     </script>
-	<script src="tela-restaurante.js"></script>
+    <script src="tela-restaurante.js"></script>
 </body>
 </html>

@@ -17,7 +17,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.JoinColumn;
 
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE) // ⚠ Isso permite que todas as subclasses compartilhem a mesma tabela
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE) //  Isso permite que todas as subclasses compartilhem a mesma tabela (NÃO TIRAR)
 @DiscriminatorColumn(name = "dtype", discriminatorType = DiscriminatorType.STRING)
 public class Cliente implements Serializable {
     @Id
@@ -31,11 +31,11 @@ public class Cliente implements Serializable {
     private String email;
     private String senha;
     private String tipo_user;
-    // Métodos comuns
-    public void realizarPedido() {
-        // Lógica comum para cliente
-    }
 
+    public void realizarPedido() {
+
+    }
+    //Não mudar (tava bugando)
     @ManyToMany
     @JoinTable(
         name = "cliente_restaurante",
